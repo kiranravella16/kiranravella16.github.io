@@ -1,0 +1,40 @@
+[
+  {
+    "sku": "US-TP-001",
+    "upc": "036000291452",
+    "title": "Ultra Soft Bath Tissue, 12 Mega Rolls",
+    "brand": "Cottonelle",
+    "price_usd": 14.97,
+    "weight_lb": 4.2,
+    "dims_in": {
+      "l": 13.5,
+      "w": 9,
+      "h": 9.5
+    },
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "sku": "US-HP-200",
+    "upc": "194253397199",
+    "title": "Wireless Noise Cancelling Headphones",
+    "brand": "Acme Audio",
+    "price_usd": 199.0,
+    "weight_lb": 0.6,
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "sku": "US-BAD-1",
+    "upc": "036000291453",
+    "title": "Bad barcode",
+    "brand": "X",
+    "price_usd": 5,
+    "updated_at": "2026-11-20T10:00:00Z"
+  },
+  {
+    "sku": "US-BAD-2",
+    "title": "",
+    "brand": "X",
+    "price_usd": -3,
+    "updated_at": "not-a-date"
+  }
+]

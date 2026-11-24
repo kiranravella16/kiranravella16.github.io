@@ -1,0 +1,10 @@
+{
+  "customerId": "sim-thin-approve",
+  "description": "No-hit at Experian, Equifax Insight Score hit (712) -> approved tier B via second look",
+  "reports": {
+    "EXPERIAN": { "bureau": "EXPERIAN", "vendorId": "primary", "packageName": "FICO 8", "score": null,
+                  "tradelines": 1, "delinquencies24m": 0, "inquiries6m": 0, "monthlyDebt": 0, "fraudAlert": false },
+    "EQUIFAX":  { "bureau": "EQUIFAX", "vendorId": "EFX-ALT-01", "packageName": "Insight Score", "score": 712,
+                  "tradelines": 0, "delinquencies24m": 0, "inquiries6m": 1, "monthlyDebt": 350, "fraudAlert": false }
+  }
+}

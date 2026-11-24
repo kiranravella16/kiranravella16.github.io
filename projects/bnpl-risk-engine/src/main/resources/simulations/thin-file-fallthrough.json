@@ -1,0 +1,10 @@
+{
+  "customerId": "sim-thin-datax",
+  "description": "No-hit at Experian and Equifax, DataX hit (668) -> approved tier C",
+  "reports": {
+    "EXPERIAN": { "bureau": "EXPERIAN", "vendorId": "primary", "packageName": "FICO 8", "score": null,
+                  "tradelines": 0, "delinquencies24m": 0, "inquiries6m": 0, "monthlyDebt": 0, "fraudAlert": false },
+    "DATAX":    { "bureau": "DATAX", "vendorId": "DTX-02", "packageName": "DataX Alt Credit", "score": 668,
+                  "tradelines": 0, "delinquencies24m": 0, "inquiries6m": 2, "monthlyDebt": 200, "fraudAlert": false }
+  }
+}

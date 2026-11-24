@@ -1,0 +1,35 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: pii-vault
+  datasource:
+    url: ${DB_URL:jdbc:h2:mem:vault;DB_CLOSE_DELAY=-1}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+# DEMO KEYS ONLY. Override every value below from a secrets manager / KMS in any real environment.
+pii:
+  keys:
+    kek:
+      1: ${PII_KEK_V1:7WtdQ10Rm33tRKCM0AUoA+EmktTJi42M26d4Iuf07zs=}
+      2: ${PII_KEK_V2:88Zj4f5s4PUNkMY69F8JGxeWHmqqhKcG3SwUzK4FkG0=}
+    active-kek-version: ${PII_ACTIVE_KEK:1}
+    blind-index-key: ${PII_INDEX_KEY:Ghqgpa0zkaqeyLih6Poxctz5Z3u12UP7sytGo9m/nWY=}
+  jwt:
+    secret-base64: ${PII_JWT_SECRET:tK+FegiUK/dbkqXCAqW3s3/i/TEGnwmilHtOqeKVNug=}
+  access:
+    grant-ttl: PT15M
+  dev-tokens:
+    enabled: ${PII_DEV_TOKENS:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

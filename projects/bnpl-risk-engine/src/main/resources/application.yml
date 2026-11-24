@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: bnpl-risk-engine
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+
+risk:
+  primary-bureau: EXPERIAN
+  primary-package: FICO 8
+  min-score: 640
+  min-tradelines: 3
+  max-dti: 0.45
+  max-delinquencies24m: 1
+  max-inquiries6m: 4
+  unsupported-states: [IA, WV]
+  tiers:
+    - { tier: A, min-score: 740, max-amount: 10000, pay-in4-apr: 0.00, pay-monthly-apr: 9.99 }
+    - { tier: B, min-score: 680, max-amount: 5000,  pay-in4-apr: 0.00, pay-monthly-apr: 19.99 }
+    - { tier: C, min-score: 640, max-amount: 1500,  pay-in4-apr: 0.00, pay-monthly-apr: 29.99 }
+  second-look:
+    enabled: true
+    # only long-term financing gets an alternate-bureau evaluation
+    products: [PAY_MONTHLY]
+    min-score: 640
+    alternates:
+      - { bureau: EQUIFAX,    vendor-id: EFX-ALT-01, package-name: Insight Score }
+      - { bureau: DATAX,      vendor-id: DTX-02,     package-name: DataX Alt Credit }
+      - { bureau: TRANSUNION, vendor-id: TU-03,      package-name: CreditVision Alt }
+  events:
+    kafka-enabled: ${KAFKA_ENABLED:false}
+    topic: risk.decisions.v1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics

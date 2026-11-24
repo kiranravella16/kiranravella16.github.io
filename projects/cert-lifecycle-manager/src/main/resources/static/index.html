@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Certificate Lifecycle Dashboard</title>
+  <style>
+    :root { --bg:#0f1720; --panel:#17212d; --line:#263445; --text:#e4ebf2; --muted:#8a9bb0;
+            --ok:#3fb68b; --warn:#e0a43a; --bad:#e05a5a; --accent:#5b9cf0; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, sans-serif; background:var(--bg); color:var(--text); }
+    header { padding:20px 32px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; }
+    h1 { font-size:18px; margin:0; font-weight:600; }
+    main { padding:24px 32px; display:grid; gap:24px; }
+    .tiles { display:grid; grid-template-columns: repeat(5, 1fr); gap:12px; }
+    .tile { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px 16px; }
+    .tile .n { font-size:26px; font-weight:600; font-variant-numeric: tabular-nums; }
+    .tile .l { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px; }
+    form { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    input, select { background:var(--bg); color:var(--text); border:1px solid var(--line); border-radius:6px; padding:8px 10px; }
+    button { background:var(--accent); color:white; border:0; border-radius:6px; padding:8px 12px; cursor:pointer; font-weight:500; }
+    button.ghost { background:transparent; border:1px solid var(--line); color:var(--text); }
+    button.danger { background:transparent; border:1px solid var(--bad); color:var(--bad); }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { text-align:left; padding:8px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:500; }
+    .badge { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; }
+    .ACTIVE { background:rgba(63,182,139,.15); color:var(--ok); }
+    .SUPERSEDED { background:rgba(138,155,176,.15); color:var(--muted); }
+    .REVOKED, .EXPIRED { background:rgba(224,90,90,.15); color:var(--bad); }
+    .soon { color:var(--warn); font-weight:600; }
+    pre { white-space:pre-wrap; font-size:11px; background:var(--bg); padding:10px; border-radius:6px; max-height:200px; overflow:auto; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+  import React, { useEffect, useState, useCallback } from "https://esm.sh/react@18.3.1";
+  import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+  import htm from "https://esm.sh/htm@3.1.1";
+  const html = htm.bind(React.createElement);
+
+  const api = async (path, opts = {}) => {
+    const res = await fetch(path, { headers: { "Content-Type": "application/json" }, ...opts });
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+    return res.json();
+  };
+  const daysLeft = (iso) => Math.floor((new Date(iso) - Date.now()) / 86400000);
+
+  function Tiles({ summary }) {
+    const items = [["active","Active"],["expiringSoon","Expiring ≤30d"],["revoked","Revoked"],["expired","Expired"],["superseded","Superseded"]];
+    return html`<div class="tiles">${items.map(([k, l]) => html`
+      <div class="tile" key=${k}><div class="n">${summary[k] ?? "–"}</div><div class="l">${l}</div></div>`)}</div>`;
+  }
+
+  function IssueForm({ onIssued }) {
+    const [cn, setCn] = useState(""); const [sans, setSans] = useState("");
+    const [days, setDays] = useState(90); const [owner, setOwner] = useState(""); const [auto, setAuto] = useState(true);
+    const [key, setKey] = useState(null); const [err, setErr] = useState(null);
+    const submit = async (e) => {
+      e.preventDefault(); setErr(null);
+      try {
+        const body = { commonName: cn, dnsNames: sans ? sans.split(",").map(s => s.trim()) : [], validityDays: Number(days), autoRenew: auto, owner };
+        const r = await api("/api/certificates", { method: "POST", body: JSON.stringify(body) });
+        setKey(r.privateKeyPem); setCn(""); setSans(""); onIssued();
+      } catch (e) { setErr(e.message); }
+    };
+    return html`<div class="panel">
+      <form onSubmit=${submit}>
+        <input placeholder="Common name (payments.internal)" value=${cn} onInput=${e => setCn(e.target.value)} required />
+        <input placeholder="SANs, comma separated" value=${sans} onInput=${e => setSans(e.target.value)} />
+        <input type="number" min="1" max="825" value=${days} onInput=${e => setDays(e.target.value)} style="width:80px" />
+        <input placeholder="Owner team" value=${owner} onInput=${e => setOwner(e.target.value)} />
+        <label><input type="checkbox" checked=${auto} onChange=${e => setAuto(e.target.checked)} /> auto-renew</label>
+        <button>Issue certificate</button>
+      </form>
+      ${err && html`<p style="color:var(--bad)">${err}</p>`}
+      ${key && html`<p class="soon">Private key (shown once, not stored by the CA):</p><pre>${key}</pre>`}
+    </div>`;
+  }
+
+  function App() {
+    const [certs, setCerts] = useState([]); const [summary, setSummary] = useState({}); const [filter, setFilter] = useState("");
+    const load = useCallback(async () => {
+      setCerts(await api("/api/certificates" + (filter ? "?status=" + filter : "")));
+      setSummary(await api("/api/certificates/summary"));
+    }, [filter]);
+    useEffect(() => { load(); const t = setInterval(load, 15000); return () => clearInterval(t); }, [load]);
+    const act = async (id, action, body) => { await api(`/api/certificates/${id}/${action}`, { method: "POST", body: body ? JSON.stringify(body) : undefined }); load(); };
+
+    return html`
+      <header><h1>Certificate Lifecycle Dashboard</h1>
+        <div><a href="/api/ca/certificate" style="color:var(--accent)">Root CA</a> · <a href="/api/ca/crl.pem" style="color:var(--accent)">CRL</a> · <a href="/actuator/prometheus" style="color:var(--accent)">Metrics</a></div>
+      </header>
+      <main>
+        <${Tiles} summary=${summary} />
+        <${IssueForm} onIssued=${load} />
+        <div class="panel">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <strong>Inventory</strong>
+            <select value=${filter} onChange=${e => setFilter(e.target.value)}>
+              <option value="">All statuses</option>${["ACTIVE","SUPERSEDED","REVOKED","EXPIRED"].map(s => html`<option key=${s}>${s}</option>`)}
+            </select>
+          </div>
+          <table><thead><tr><th>Common name</th><th>Serial</th><th>Owner</th><th>Expires</th><th>Status</th><th></th></tr></thead>
+          <tbody>${certs.map(c => { const d = daysLeft(c.notAfter); return html`<tr key=${c.id}>
+            <td>${c.commonName}<div style="color:var(--muted);font-size:11px">${c.dnsNames.join(", ")}</div></td>
+            <td style="font-family:monospace;font-size:11px">${c.serial.slice(0, 16)}…</td>
+            <td>${c.owner || "—"}</td>
+            <td class=${c.status === "ACTIVE" && d <= 30 ? "soon" : ""}>${new Date(c.notAfter).toLocaleDateString()} (${d}d)</td>
+            <td><span class=${"badge " + c.status}>${c.status}</span>${c.revocationReason ? " " + c.revocationReason : ""}</td>
+            <td style="white-space:nowrap">${c.status === "ACTIVE" && html`
+              <button class="ghost" onClick=${() => act(c.id, "renew")}>Renew</button>
+              <button class="danger" onClick=${() => act(c.id, "revoke", { reason: "KEY_COMPROMISE" })}>Revoke</button>`}</td>
+          </tr>`; })}</tbody></table>
+        </div>
+      </main>`;
+  }
+  createRoot(document.getElementById("root")).render(html`<${App} />`);
+</script>
+</body>
+</html>

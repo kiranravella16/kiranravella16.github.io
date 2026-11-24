@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: certs
+      POSTGRES_USER: certs
+      POSTGRES_PASSWORD: certs
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U certs"]
+      interval: 5s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/certs
+      DB_USER: certs
+      DB_PASSWORD: certs
+      CA_KEYSTORE_PATH: /app/data/ca.p12
+      CA_KEYSTORE_PASSWORD: local-dev-only
+    volumes:
+      - ca-data:/app/data
+    ports: ["8080:8080"]
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports: ["9090:9090"]
+
+volumes:
+  ca-data:

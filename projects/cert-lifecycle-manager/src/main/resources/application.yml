@@ -1,0 +1,35 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: cert-lifecycle-manager
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/certs;AUTO_SERVER=TRUE}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+pki:
+  ca-subject: "CN=Kiran Demo Root CA, O=Cert Lifecycle Manager, C=US"
+  keystore-path: ${CA_KEYSTORE_PATH:./data/ca.p12}
+  # Inject from a secrets manager (Akeyless / Vault / GCP Secret Manager) in real deployments.
+  keystore-password: ${CA_KEYSTORE_PASSWORD:change-me}
+  root-validity-days: 3650
+  default-validity-days: 90
+  renew-before-days: 30
+  crl-validity-hours: 24
+  reconcile-cron: "0 */15 * * * *"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
