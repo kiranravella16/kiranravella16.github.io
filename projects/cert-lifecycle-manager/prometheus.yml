@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: cert-lifecycle-manager
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["app:8080"]
+rule_files: []
+# Example alert you would add in Alertmanager:
+#   pki_certificates_expiring_soon > 0 and on() pki_certificate_renewal_failures_total > 0

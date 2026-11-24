@@ -1,0 +1,8 @@
+{
+  "customerId": "sim-prime",
+  "description": "Thick file, score 781 -> approved tier A, no second look",
+  "reports": {
+    "EXPERIAN": { "bureau": "EXPERIAN", "vendorId": "primary", "packageName": "FICO 8", "score": 781,
+                  "tradelines": 14, "delinquencies24m": 0, "inquiries6m": 1, "monthlyDebt": 900, "fraudAlert": false }
+  }
+}

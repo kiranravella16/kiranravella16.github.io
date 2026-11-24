@@ -1,0 +1,10 @@
+{
+  "customerId": "sim-delinquent",
+  "description": "Recent serious delinquencies and high DTI -> declined, no second look (hard stop)",
+  "reports": {
+    "EXPERIAN": { "bureau": "EXPERIAN", "vendorId": "primary", "packageName": "FICO 8", "score": 598,
+                  "tradelines": 2, "delinquencies24m": 3, "inquiries6m": 6, "monthlyDebt": 2600, "fraudAlert": false },
+    "EQUIFAX":  { "bureau": "EQUIFAX", "vendorId": "EFX-ALT-01", "packageName": "Insight Score", "score": 720,
+                  "tradelines": 0, "delinquencies24m": 0, "inquiries6m": 0, "monthlyDebt": 0, "fraudAlert": false }
+  }
+}

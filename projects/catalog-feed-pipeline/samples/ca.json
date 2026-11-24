@@ -1,0 +1,21 @@
+[
+  {
+    "sku": "CA-TP-12",
+    "gtin": "00036000291452",
+    "title_en": "Ultra Soft Bath Tissue, 12 Rolls",
+    "title_fr": "Papier hygiénique ultra doux, 12 rouleaux",
+    "brand": "Cottonelle",
+    "price_cad": 17.49,
+    "weight_kg": 1.9,
+    "updated_at": "2026-11-22T12:00:00Z"
+  },
+  {
+    "sku": "CA-HP-200",
+    "gtin": "194253397199",
+    "title_en": "Wireless Noise Cancelling Headphones",
+    "title_fr": "Casque sans fil à réduction de bruit",
+    "brand": "Acme Audio",
+    "price_cad": 269.99,
+    "updated_at": "2026-11-22T12:00:00Z"
+  }
+]

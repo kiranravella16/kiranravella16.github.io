@@ -1,0 +1,24 @@
+[
+  {
+    "sku": "MX-PH-77",
+    "codigo_barras": "0036000291452",
+    "nombre": "Papel Higiénico Ultra Suave, 12 rollos",
+    "marca": "Cottonelle",
+    "precio_mxn": 189.5,
+    "peso_kg": 1.9,
+    "dimensiones_cm": {
+      "largo": 34.3,
+      "ancho": 22.9,
+      "alto": 24.1
+    },
+    "actualizado": "2026-11-21T08:30:00-06:00"
+  },
+  {
+    "sku": "MX-CAFE-5",
+    "nombre": "Café de Olla Molido 500g",
+    "marca": "Finca Real",
+    "precio_mxn": 124.0,
+    "peso_kg": 0.5,
+    "actualizado": "2026-11-21T08:30:00-06:00"
+  }
+]

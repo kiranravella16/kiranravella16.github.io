@@ -1,0 +1,8 @@
+{
+  "customerId": "sim-thin-decline",
+  "description": "Thin at every bureau -> declined with insufficient credit history",
+  "reports": {
+    "EXPERIAN": { "bureau": "EXPERIAN", "vendorId": "primary", "packageName": "FICO 8", "score": null,
+                  "tradelines": 0, "delinquencies24m": 0, "inquiries6m": 0, "monthlyDebt": 0, "fraudAlert": false }
+  }
+}

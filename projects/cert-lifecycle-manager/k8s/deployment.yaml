@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-lifecycle-manager
+  labels: { app: cert-lifecycle-manager }
+spec:
+  replicas: 1   # single writer: the CA key is held by one pod (use KMS/HSM to scale out)
+  selector:
+    matchLabels: { app: cert-lifecycle-manager }
+  template:
+    metadata:
+      labels: { app: cert-lifecycle-manager }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /actuator/prometheus
+        prometheus.io/port: "8080"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: app
+          image: ghcr.io/kiranravella16/cert-lifecycle-manager:latest
+          ports: [{ containerPort: 8080 }]
+          env:
+            - name: DB_URL
+              valueFrom: { secretKeyRef: { name: cert-manager-db, key: url } }
+            - name: DB_USER
+              valueFrom: { secretKeyRef: { name: cert-manager-db, key: username } }
+            - name: DB_PASSWORD
+              valueFrom: { secretKeyRef: { name: cert-manager-db, key: password } }
+            - name: CA_KEYSTORE_PASSWORD
+              valueFrom: { secretKeyRef: { name: cert-manager-ca, key: keystore-password } }
+            - name: CA_KEYSTORE_PATH
+              value: /var/lib/ca/ca.p12
+          volumeMounts:
+            - { name: ca, mountPath: /var/lib/ca }
+          readinessProbe:
+            httpGet: { path: /actuator/health/readiness, port: 8080 }
+          livenessProbe:
+            httpGet: { path: /actuator/health/liveness, port: 8080 }
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { memory: 512Mi }
+      volumes:
+        - name: ca
+          persistentVolumeClaim: { claimName: cert-manager-ca }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-lifecycle-manager
+spec:
+  selector: { app: cert-lifecycle-manager }
+  ports: [{ port: 80, targetPort: 8080 }]

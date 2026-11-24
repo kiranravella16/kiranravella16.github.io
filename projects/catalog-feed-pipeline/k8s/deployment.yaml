@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: catalog
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: catalog-feed-pipeline
+  namespace: catalog
+  annotations:
+    # from `terraform output workload_service_account`
+    iam.gke.io/gcp-service-account: catalog-pipeline-wl@PROJECT_ID.iam.gserviceaccount.com
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-feed-pipeline
+  namespace: catalog
+spec:
+  replicas: 3   # consumers in one group share the raw-topic partitions
+  selector:
+    matchLabels: { app: catalog-feed-pipeline }
+  template:
+    metadata:
+      labels: { app: catalog-feed-pipeline }
+    spec:
+      serviceAccountName: catalog-feed-pipeline
+      containers:
+        - name: app
+          image: us-central1-docker.pkg.dev/PROJECT_ID/catalog-pipeline/catalog-feed-pipeline:latest
+          ports: [{ containerPort: 4000 }]
+          env:
+            - name: KAFKA_BROKERS
+              value: kafka-bootstrap.kafka.svc.cluster.local:9092
+          readinessProbe:
+            httpGet: { path: /healthz, port: 4000 }
+          resources:
+            requests: { cpu: 200m, memory: 256Mi }
+            limits: { memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-feed-pipeline
+  namespace: catalog
+spec:
+  selector: { app: catalog-feed-pipeline }
+  ports: [{ port: 80, targetPort: 4000 }]
